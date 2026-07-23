@@ -1,0 +1,39 @@
+---
+- name: setup ansible user
+  hosts:  target_nodes
+  become: true
+    
+  tasks:
+    - name: setup ansible user
+      user:
+        name: ansible
+        comment: Ansible Automation User
+        shell: /bin/bash
+        password: "{{ var_ansible_user_pass }}"
+        state: present
+        update_password: on_create
+
+    - name: setup passless sudo
+      lineinfile:
+        path: /etc/sudoers.d/ansible-automation
+        line: ansible ALL=(ALL) NOPASSWD:ALL
+        mode: '0440'
+        create: true 
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: create ssh config dir
+      file:
+        path: /home/ansible/.ssh
+        state: directory
+        owner: ansible
+        group: ansible
+        mode: '0700'
+
+    - name: append pub key in file
+      lineinfile:
+        path: /home/ansible/.ssh/authorized_keys
+        line: "{{ lookup('file', var_ansible_key) }}"
+        owner: ansible
+        group: ansible
+        mode: '0600'
+        create: true

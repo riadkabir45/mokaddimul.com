@@ -1,0 +1,33 @@
+---
+- name: test connections
+  become: true
+  hosts: target_nodes
+  remote_user: ansible
+
+  vars:
+    var_serverr_domain: 'mokaddimul.com'
+
+  tasks:
+    - name: deploy proxy via nginx
+      template:
+        src: ../templates/nginx.conf.j2
+        dest: "/etc/nginx/conf.d/ansible_{{ item.name }}.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      loop: "{{ var_nginx_data }}"
+      notify:
+        - test nginx
+
+
+  handlers:
+    - name: test nginx
+      command:
+        cmd: "nginx -t"
+      notify:
+        - reload nginx
+
+    - name: reload nginx
+      systemd:
+        name: nginx
+        state: reloaded

@@ -1,0 +1,15 @@
+[Unit]
+Description={{ item.name }} Daemon
+After=syslog.target network.target
+[Service]
+User={{ var_serverr_user }}
+Group={{ var_serverr_user }}
+Type=simple
+
+ExecStart={{ item.exec }}
+WorkingDirectory={{ item.wd }}
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target

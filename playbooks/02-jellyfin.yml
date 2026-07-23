@@ -1,0 +1,47 @@
+---
+- name: test connections
+  become: true
+  hosts: target_nodes
+  remote_user: ansible
+
+  tasks:
+    - name: create gpg directory directory
+      file:
+        path: "/etc/apt/keyrings"
+        state: directory
+        owner: "root"
+        group: "root"
+        mode: '0755'
+
+    - name: download  jellyfin gpg key
+      get_url:
+        url: https://repo.jellyfin.org/jellyfin_team.gpg.key
+        dest: /etc/apt/keyrings/jellyfin.gpg
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: create jellyfin repo file
+      blockinfile:
+        path: /etc/apt/sources.list.d/jellyfin.sources
+        create: yes
+        mode: '0755'
+        block: |
+          Types: deb
+          URIs: https://repo.jellyfin.org/debian
+          Suites: trixie
+          Components: main
+          Architectures: amd64
+          Signed-By: /etc/apt/keyrings/jellyfin.gpg
+
+    - name: install jellyfin
+      package:
+        name: jellyfin
+        state: latest
+        update_cache: yes
+
+    - name: enable and start jellyfin
+      systemd:
+        name: jellyfin
+        enabled: yes
+        state: started

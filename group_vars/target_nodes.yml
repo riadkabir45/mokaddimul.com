@@ -1,0 +1,123 @@
+var_ansible_user_pass: "$6$B.Kp4RxLYPxT1VU7$/CMTx4YU102e0DpSf3bUuB.SQxPKP7v3rVSOKClDP5iPaKQuCg    3g.LrkNrVp.FW/WYyI9maQL0C8MBGM38oyn."
+var_serverr_pass: "$6$ZfGT7/0cvG.NtRfD$ZIR7a2L67pLxvZgmLTAXRE4eSsEqrdHjkzPKHqWiBxiXhH0Z9o.OE84    duDLwEmJ0n9sRPRLyAQNiu3nYZzOi8/"
+var_ansible_key: "~/.ssh/mkds.pub"
+var_serverr_user: serverr
+var_serverr_dir: "/opt/serverr"
+var_certbot_email: riadkabir45@gmail.com
+
+var_serverr_data:
+- name: radarr
+  url: http://radarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64
+  repack: true
+  data_dir: "/var/lib/serverr/radarr"
+  exec: "{{ var_serverr_dir }}/Radarr/Radarr -nobrowser -data=/var/lib/serverr/radarr"
+  wd: "{{ var_serverr_dir }}/Radarr"
+
+- name: sonarr
+  url: https://services.sonarr.tv/v1/download/main/latest?version=4&os=linux&arch=x64
+  repack: true
+  data_dir: "/var/lib/serverr/sonarr"
+  exec: "{{ var_serverr_dir }}/Sonarr/Sonarr -nobrowser -data=/var/lib/serverr/sonarr"
+  wd: "{{ var_serverr_dir }}/Sonarr"
+
+- name: whisparr
+  url: http://whisparr.servarr.com/v1/update/nightly/updatefile?os=linux&runtime=netcore&arch=x64
+  repack: true
+  data_dir: "/var/lib/serverr/whisparr"
+  exec: "{{ var_serverr_dir }}/Whisparr/Whisparr -nobrowser -data=/var/lib/serverr/whisparr"
+  wd: "{{ var_serverr_dir }}/Whisparr"
+
+- name: readarr
+  url: http://readarr.servarr.com/v1/update/develop/updatefile?os=linux&runtime=netcore&arch=x64
+  repack: true
+  data_dir: "/var/lib/serverr/readarr"
+  exec: "{{ var_serverr_dir }}/Readarr/Readarr -nobrowser -data=/var/lib/serverr/readarr"
+  wd: "{{ var_serverr_dir }}/Readarr"
+
+- name: lidarr
+  url: http://lidarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64
+  repack: true
+  data_dir: "/var/lib/serverr/lidarr"
+  exec: "{{ var_serverr_dir }}/Lidarr/Lidarr -nobrowser -data=/var/lib/serverr/lidarr"
+  wd: "{{ var_serverr_dir }}/Lidarr"
+
+- name: prowlarr
+  url: http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64
+  repack: true
+  data_dir: "/var/lib/serverr/prowlarr"
+  exec: "{{ var_serverr_dir }}/Prowlarr/Prowlarr -nobrowser -data=/var/lib/serverr/prowlarr"
+  wd: "{{ var_serverr_dir }}/Prowlarr"
+
+- name: prometheus
+  url: https://github.com/prometheus/prometheus/releases/download/v3.13.1/prometheus-3.13.1.linux-amd64.tar.gz
+  repack: true
+  data_dir: "{{ var_serverr_dir }}/prometheus-3.13.1.linux-amd64"
+  exec: "{{ var_serverr_dir }}/prometheus-3.13.1.linux-amd64/prometheus --config.file=prometheus.yml"
+  wd: "{{ var_serverr_dir }}/prometheus-3.13.1.linux-amd64"
+
+- name: node_exporter
+  url: https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
+  repack: true
+  data_dir: "{{ var_serverr_dir }}/node_exporter-1.10.2.linux-amd64"
+  exec: "{{ var_serverr_dir }}/node_exporter-1.10.2.linux-amd64/node_exporter"
+  wd: "{{ var_serverr_dir }}/node_exporter-1.10.2.linux-amd64"
+
+- name: nginx_node
+  url: https://github.com/nginx/nginx-prometheus-exporter/releases/download/v1.5.0/nginx-prometheus-exporter_1.5.0_linux_amd64.tar.gz
+  repack: false
+  data_dir: "{{ var_serverr_dir }}/nginx-prometheus-exporter_1.5.0_linux_amd64"
+  exec: "{{ var_serverr_dir }}/nginx_node/nginx-prometheus-exporter --nginx.scrape-uri=http://localhost:4501/stub_status"
+  wd: "{{ var_serverr_dir }}/nginx_node"
+
+- name: silver_bullet
+  url: https://github.com/silverbulletmd/silverbullet/releases/download/2.9.0/silverbullet-server-linux-x86_64.zip
+  repack: false
+  data_dir: "{{ var_serverr_dir }}/silver_bullet/riad_space"
+  exec: "{{ var_serverr_dir }}/silver_bullet/silverbullet -p 4504 riad_space"
+  wd: "{{ var_serverr_dir }}/silver_bullet"
+
+var_nginx_data:
+- name: pop
+  port: 8096
+- name: qbit
+  port: 8080
+- name: prowlarr
+  port: 9696
+- name: radarr
+  port: 7878
+- name: sonarr
+  port: 8989
+- name: lidarr
+  port: 8686
+- name: readarr
+  port: 8787
+- name: whisparr
+  port: 6969
+- name: grafana
+  port: 3000
+- name: ntfy
+  port: 4503
+- name: sblt
+  port: 4504
+
+var_pkgs:
+  - network-manager
+  - nginx
+  - curl
+  - gnupg
+  - acl
+  - certbot
+  - qbittorrent-nox
+  - sqlite3
+  - mediainfo
+  - libchromaprint-tools
+  - firewalld
+  - fail2ban
+  - apt-transport-https
+
+var_services:
+  - NetworkManager
+  - nginx
+  - qbittorrent-nox@serverr
+  - firewalld
+  - fail2ban

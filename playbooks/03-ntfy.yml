@@ -1,0 +1,90 @@
+---
+#wget https://github.com/binwiederhier/ntfy/releases/download/v2.26.3/ntfy_2.26.3_linux_amd64.tar.gz
+#tar zxvf ntfy_2.26.3_linux_amd64.tar.gz
+#sudo cp -a ntfy_2.26.3_linux_amd64/ntfy /usr/local/bin/ntfy
+#sudo mkdir /etc/ntfy && sudo cp ntfy_2.26.3_linux_amd64/{client,server}/*.yml /etc/ntfy
+#sudo ntfy serve
+- name: install ntfy
+  become: true
+  hosts: target_nodes
+  remote_user: ansible
+
+  tasks:
+    - name: download  ntfy
+      get_url:
+        url: https://github.com/binwiederhier/ntfy/releases/download/v2.26.3/ntfy_2.26.3_linux_amd64.tar.gz
+        dest: "~/ntfy.tar.gz"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: unpack server files
+      unarchive:
+        src: "~/ntfy.tar.gz"
+        dest: "{{ var_serverr_dir }}"
+        remote_src: yes
+        owner: "{{ var_serverr_user }}"
+        group: "{{ var_serverr_user }}"
+
+    - name: mkdir config files
+      file:
+        path: "/etc/ntfy"
+        state: directory
+        owner: "{{ var_serverr_user }}"
+        group: "{{ var_serverr_user }}"
+        mode: "0644"
+
+    - name: Find client and server yaml files on the remote host
+      find:
+        paths:
+          - "{{ var_serverr_dir }}/ntfy_2.26.3_linux_amd64/client"
+          - "{{ var_serverr_dir }}/ntfy_2.26.3_linux_amd64/server"
+        patterns: "*.yml"
+      register: found_yml_files
+
+    - name: Copy ntfy client and server yaml files
+      copy:
+        src: "{{ item.path }}"
+        dest: /etc/ntfy/
+        mode: '0644'
+        remote_src: true
+      loop: "{{ found_yml_files.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    - name: Update listen-http port in ntfy configuration
+      lineinfile:
+        path: /etc/ntfy/server.yml
+        regexp: '^listen-http:.*'
+        line: 'listen-http: ":4503"'
+        state: present
+
+    - name: deploy ntfy service
+      template:
+        src: ../templates/serverr.service.j2
+        dest: "/etc/systemd/system/ansible_{{ item.name }}.service"
+        owner: root
+        group: root
+        mode: '0644'
+      loop:
+        - name: "ntfy"
+          exec: "{{ var_serverr_dir }}//ntfy_2.26.3_linux_amd64/ntfy serve  --listen-http :4503"
+          wd: "{{ var_serverr_dir }}//ntfy_2.26.3_linux_amd64"
+      loop_control:
+        label: "{{ item.name }}"
+      register: deployed
+
+    - name: daemon reload
+      systemd:
+        daemon_reload: true
+      when: deployed.results | selectattr('changed') | list | length > 0
+
+    - name: restart serverr
+      systemd:
+        name: "ansible_{{ item.name }}"
+        enabled: yes
+        state: started
+      loop:
+        - name: "ntfy"
+      loop_control:
+        label: "{{ item.name }}"

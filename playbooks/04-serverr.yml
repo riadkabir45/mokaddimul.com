@@ -1,0 +1,77 @@
+
+---
+- name: test connections
+  become: true
+  hosts: target_nodes
+  remote_user: ansible
+
+  tasks:
+    - name: download serverr files
+      get_url:
+        url: "{{ item.url }}"
+        dest: "~/{{ item.name }}.tar.gz"
+        owner: root
+        group: root
+        mode: '0644'
+      loop: "{{ var_serverr_data }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: create server dir
+      file:
+        path: "{{ var_serverr_dir }}/{{ item.name }}"
+        state: directory
+        owner: root
+        group: root
+      when: not item.repack
+      loop: "{{ var_serverr_data }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: unpack server files
+      unarchive:
+        src: "~/{{ item.name }}.tar.gz"
+        dest: "{{ item.repack | bool | ternary(var_serverr_dir, var_serverr_dir ~ '/' ~ item.name) }}"
+        remote_src: yes
+        owner: "{{ var_serverr_user }}"
+        group: "{{ var_serverr_user }}"
+      loop: "{{ var_serverr_data }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: create server data dir
+      file:
+        path: "{{ item.data_dir }}"
+        state: directory
+        owner: "{{ var_serverr_user }}"
+        group: "{{ var_serverr_user }}"
+      loop: "{{ var_serverr_data }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: deploy serverr services
+      template:
+        src: ../templates/serverr.service.j2
+        dest: "/etc/systemd/system/ansible_{{ item.name }}.service"
+        owner: root
+        group: root
+        mode: '0644'
+      loop: "{{ var_serverr_data }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: deployed
+
+    - name: daemon reload
+      systemd:
+        daemon_reload: true
+      when: deployed.results | selectattr('changed') | list | length > 0
+
+    - name: restart serverr
+      systemd:
+        name: "ansible_{{ item.name }}"
+        enabled: yes
+        state: started
+          #when: deployed.results | selectattr('changed') | list | length > 0
+      loop: "{{ var_serverr_data }}"
+      loop_control:
+        label: "{{ item.name }}"

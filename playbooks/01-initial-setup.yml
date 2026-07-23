@@ -1,0 +1,68 @@
+---
+- name: test connections
+  become: true
+  hosts: target_nodes
+  remote_user: ansible
+
+  tasks:
+    - name: install packages
+      package:
+        update_cache: yes
+        name: "{{ var_pkgs }}"
+        state: latest
+
+    - name: enable network-manager and nginx
+      systemd:
+        name: "{{ item }}"
+        enabled: yes
+        state: started
+      loop: "{{ var_services }}"
+
+    - name: create server user
+      user:
+        name: "{{ var_serverr_user }}"
+        comment: Standard user to be used to run server
+        shell: /bin/bash
+        password: "{{ var_serverr_pass }}"
+        state: present
+        update_password: on_create
+        
+    - name: create serverr directory
+      file:
+        path: "{{ var_serverr_dir }}"
+        state: directory
+        owner: "{{ var_serverr_user}}"
+        group: "{{ var_serverr_user}}"
+        mode: '0755'
+
+    - name: set acl permission
+      ansible.posix.acl:
+        path: "{{ var_serverr_dir }}"
+        entity: "{{ var_serverr_user }}"
+        etype: user
+        permissions: rwx
+        state: present
+        default: "{{ item.default_flag }}"
+      loop:
+        - { default_flag: false }
+        - { default_flag: true }
+
+        
+    - name: create letsencrypt dir
+      file:
+        path: /etc/letsencrypt/live/mokaddimul.com
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: copy certification
+      copy:
+        src: "../statics/certs/{{ item }}"
+        dest: "/etc/letsencrypt/live/mokaddimul.com/{{ item }}"
+        owner: root
+        group: root
+        mode: '0600'
+      loop:
+        - fullchain.pem
+        - privkey.pem
