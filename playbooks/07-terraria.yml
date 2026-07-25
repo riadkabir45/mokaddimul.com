@@ -1,0 +1,38 @@
+---
+- name: test connections
+  become: true
+  hosts: target_nodes
+  remote_user: ansible
+
+  tasks:
+    - name: download terraria
+      get_url:
+        url: "https://terraria.org/api/download/pc-dedicated-server/terraria-server-1456.zip"
+        dest: ~/terraria.zip
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: make server dir
+      file:
+        path: "{{ var_serverr_dir }}/terraria"
+        state: directory
+        owner: "{{ var_serverr_user }}"
+        group: "{{ var_serverr_user }}"
+        mode: '0644'
+
+    - name: unpack terraria server
+      unarchive:
+        src: "~/terraria.zip"
+        dest: "{{ var_serverr_dir }}/terraria"
+        remote_src: yes
+        owner: "{{ var_serverr_user }}"
+        group: "{{ var_serverr_user }}"
+        include:
+          - "1456/Linux"
+
+    - name: enable and start jellyfin
+      systemd:
+        name: jellyfin
+        enabled: yes
+        state: started
