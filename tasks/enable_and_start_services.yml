@@ -1,0 +1,6 @@
+- name: "enable and start {{ task_var_pkg | join(', ') }} packages"
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop: "{{ task_var_pkg }}"

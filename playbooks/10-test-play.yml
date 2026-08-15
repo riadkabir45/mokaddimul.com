@@ -1,0 +1,15 @@
+---
+- name: setup ansible user
+  hosts:  test_nodes
+
+  vars:
+    test1: "bro it works"
+    test2:
+      - name: "test2 name"
+      - ser: "test2"
+      - value: "{{ test2 }} works"
+    
+  tasks:
+    - name: test
+      debug:
+        msg: "Msg: {{ test2 }}"

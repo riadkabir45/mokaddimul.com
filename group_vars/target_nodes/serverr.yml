@@ -1,10 +1,3 @@
-var_ansible_user_pass: "$6$B.Kp4RxLYPxT1VU7$/CMTx4YU102e0DpSf3bUuB.SQxPKP7v3rVSOKClDP5iPaKQuCg    3g.LrkNrVp.FW/WYyI9maQL0C8MBGM38oyn."
-var_serverr_pass: "$6$ZfGT7/0cvG.NtRfD$ZIR7a2L67pLxvZgmLTAXRE4eSsEqrdHjkzPKHqWiBxiXhH0Z9o.OE84    duDLwEmJ0n9sRPRLyAQNiu3nYZzOi8/"
-var_ansible_key: "~/.ssh/mkds.pub"
-var_serverr_user: serverr
-var_serverr_dir: "/opt/serverr"
-var_certbot_email: riadkabir45@gmail.com
-
 var_serverr_data:
 - name: radarr
   url: http://radarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64
@@ -52,8 +45,8 @@ var_serverr_data:
   url: https://github.com/prometheus/prometheus/releases/download/v3.13.1/prometheus-3.13.1.linux-amd64.tar.gz
   repack: true
   data_dir: "{{ var_serverr_dir }}/prometheus-3.13.1.linux-amd64"
-  exec: "{{ var_serverr_dir }}/prometheus-3.13.1.linux-amd64/prometheus --config.file=prometheus.yml"
-  wd: "{{ var_serverr_dir }}/prometheus-3.13.1.linux-amd64"
+  exec: "{{ var_serverr_dir }}/prometheus-3.13.1.linux-amd64/prometheus --config.file=/var/lib/serverr/prometheus/prometheus.yml"
+  wd: "/var/lib/serverr/prometheus"
 
 - name: node_exporter
   url: https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
@@ -76,48 +69,4 @@ var_serverr_data:
   exec: "{{ var_serverr_dir }}/silver_bullet/silverbullet -p 4504 riad_space"
   wd: "{{ var_serverr_dir }}/silver_bullet"
 
-var_nginx_data:
-- name: pop
-  port: 8096
-- name: qbit
-  port: 8080
-- name: prowlarr
-  port: 9696
-- name: radarr
-  port: 7878
-- name: sonarr
-  port: 8989
-- name: lidarr
-  port: 8686
-- name: readarr
-  port: 8787
-- name: whisparr
-  port: 6969
-- name: grafana
-  port: 3000
-- name: ntfy
-  port: 4503
-- name: sblt
-  port: 4504
 
-var_pkgs:
-  - network-manager
-  - nginx
-  - curl
-  - gnupg
-  - acl
-  - certbot
-  - qbittorrent-nox
-  - sqlite3
-  - mediainfo
-  - libchromaprint-tools
-  - firewalld
-  - fail2ban
-  - apt-transport-https
-
-var_services:
-  - NetworkManager
-  - nginx
-  - qbittorrent-nox@serverr
-  - firewalld
-  - fail2ban

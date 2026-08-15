@@ -1,0 +1,7 @@
+- name: "create directory {{ task_var_dir }} under  {{ task_var_owner }}"
+  file:
+    path: "{{ task_var_dir }}"
+    state: directory
+    owner: "{{ task_var_owner }}"
+    group: "{{ task_var_group | default(task_var_owner, true) }}"
+    mode: "{{ task_var_mode | default('0755') }}"

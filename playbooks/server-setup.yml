@@ -1,22 +1,20 @@
 ---
-- name: test connections
+- name: setup host for server
   become: true
   hosts: target_nodes
   remote_user: ansible
 
   tasks:
     - name: install packages
-      package:
-        update_cache: yes
-        name: "{{ var_pkgs }}"
-        state: latest
+      import_tasks: ../tasks/install_packages.yml
+      vars:
+        task_var_pkg: "{{ var_pkgs }}"
 
-    - name: enable network-manager and nginx
-      systemd:
-        name: "{{ item }}"
-        enabled: yes
-        state: started
-      loop: "{{ var_services }}"
+    - name: enable services
+      import_tasks: ../tasks/enable_and_start_services.yml
+      vars:
+        task_var_pkg: "{{ var_services }}"
+
 
     - name: create server user
       user:
@@ -28,12 +26,11 @@
         update_password: on_create
         
     - name: create serverr directory
-      file:
-        path: "{{ var_serverr_dir }}"
-        state: directory
-        owner: "{{ var_serverr_user}}"
-        group: "{{ var_serverr_user}}"
-        mode: '0755'
+      import_tasks: ../tasks/create_directory.yml
+      vars:
+        task_var_dir: "{{ var_serverr_dir }}"
+        task_var_owner: "{{ var_serverr_user }}"
+        task_var_mode: "775"
 
     - name: set acl permission
       ansible.posix.acl:
@@ -42,19 +39,23 @@
         etype: user
         permissions: rwx
         state: present
-        default: "{{ item.default_flag }}"
-      loop:
-        - { default_flag: false }
-        - { default_flag: true }
-
+        default: false
+        
+    - name: set acl default permission
+      ansible.posix.acl:
+        path: "{{ var_serverr_dir }}"
+        entity: "{{ var_serverr_user }}"
+        etype: user
+        permissions: rwx
+        state: present
+        default: true
         
     - name: create letsencrypt dir
-      file:
-        path: /etc/letsencrypt/live/mokaddimul.com
-        state: directory
-        owner: root
-        group: root
-        mode: '0755'
+      import_tasks: ../tasks/create_directory.yml
+      vars:
+        task_var_dir: "/etc/letsencrypt/live/mokaddimul.com"
+        task_var_owner: "root"
+        task_var_mode: "755"
 
     - name: copy certification
       copy:

@@ -1,0 +1,28 @@
+var_ansible_user_pass: "$6$B.Kp4RxLYPxT1VU7$/CMTx4YU102e0DpSf3bUuB.SQxPKP7v3rVSOKClDP5iPaKQuCg3g.LrkNrVp.FW/WYyI9maQL0C8MBGM38oyn."
+var_serverr_pass: "$6$ZfGT7/0cvG.NtRfD$ZIR7a2L67pLxvZgmLTAXRE4eSsEqrdHjkzPKHqWiBxiXhH0Z9o.OE84duDLwEmJ0n9sRPRLyAQNiu3nYZzOi8/"
+var_ansible_key: "~/.ssh/mkds.pub"
+var_serverr_user: serverr
+var_serverr_dir: "/opt/serverr"
+var_certbot_email: riadkabir45@gmail.com
+
+var_pkgs:
+  - network-manager
+  - nginx
+  - curl
+  - gnupg
+  - acl
+  - certbot
+  - qbittorrent-nox
+  - sqlite3
+  - mediainfo
+  - libchromaprint-tools
+  - firewalld
+  - fail2ban
+  - apt-transport-https
+
+var_services:
+  - NetworkManager
+  - nginx
+  - qbittorrent-nox@serverr
+  - firewalld
+  - fail2ban

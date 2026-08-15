@@ -1,0 +1,27 @@
+var_nginx_data:
+- name: pop
+  port: 8096
+- name: qbit
+  port: 8080
+- name: prowlarr
+  port: 9696
+- name: radarr
+  port: 7878
+- name: sonarr
+  port: 8989
+- name: lidarr
+  port: 8686
+- name: readarr
+  port: 8787
+- name: whisparr
+  port: 6969
+- name: grafana
+  port: 3000
+- name: ntfy
+  port: 4503
+- name: sblt
+  port: 4504
+- name: sheet
+  port: 8484
+
+

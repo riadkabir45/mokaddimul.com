@@ -1,0 +1,5 @@
+- name: "install {{ task_var_pkg | join(', ') }} packages"
+  package:
+    update_cache: yes
+    name: "{{ task_var_pkg }}"
+    state: latest
