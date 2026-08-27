@@ -1,27 +1,48 @@
 var_nginx_data:
 - name: pop
   port: 8096
+  secured: false
 - name: qbit
   port: 8080
+  secured: false
 - name: prowlarr
   port: 9696
+  secured: false
 - name: radarr
   port: 7878
+  secured: true
 - name: sonarr
   port: 8989
+  secured: true
 - name: lidarr
   port: 8686
+  secured: false
 - name: readarr
   port: 8787
+  secured: false
 - name: whisparr
   port: 6969
+  secured: false
 - name: grafana
   port: 3000
+  secured: false
 - name: ntfy
   port: 4503
+  secured: false
 - name: sblt
   port: 4504
+  secured: true
 - name: sheet
   port: 8484
+  secured: false
+- name: auth
+  port: 9000
+  secured: false
+- name: matrix
+  port: 8008
+  secured: false
+- name: abook
+  port: 13378
+  secured: false
 
 

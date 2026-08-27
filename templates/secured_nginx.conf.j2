@@ -1,0 +1,72 @@
+{% set _ = item.update({'url_path': item.name ~ '.' ~ var_serverr_domain}) %}
+
+server {
+	listen 80;
+	server_name {{ item.url_path }};
+	return 301 https://$host$request_uri;
+}
+
+server {
+	listen 443 ssl;
+	server_name {{ item.url_path }};
+
+	ssl_certificate /etc/letsencrypt/live/mokaddimul.com/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/mokaddimul.com/privkey.pem;
+
+    # --- AUTHENTIK INTERNALS ---
+	# Fast-path authorization endpoint for auth_request subrequests
+	location = /outpost.goauthentik.io/auth/nginx {
+		proxy_pass              http://127.0.0.1:9000/outpost.goauthentik.io/auth/nginx;
+		proxy_set_header        Host $host;
+		proxy_set_header        X-Original-URL $scheme://$http_host$request_uri;
+		proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header        X-Forwarded-Proto $scheme;
+		
+		# CRITICAL FOR AUTH_REQUEST: Prevents Nginx 500 on subrequest
+		proxy_pass_request_body off;
+		proxy_set_header        Content-Length "";
+	}
+
+	# General Outpost location (handles login redirects, static assets, flows)
+	location /outpost.goauthentik.io/ {
+		proxy_pass              http://127.0.0.1:9000;
+		proxy_set_header        Host $host;
+		proxy_set_header        X-Original-URL $scheme://$http_host$request_uri;
+		proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header        X-Forwarded-Proto $scheme;
+	}
+
+	location / {
+		# --- DYNAMIC AUTHENTIK GATEKEEPER ---
+		# If you define "secured: true" in your item variable, Nginx enforces Authentik
+		{% if item.secured %}
+        auth_request     /outpost.goauthentik.io/auth/nginx;
+		error_page       401 = @goauthentik_restart;
+
+		# Pass authenticated user headers from Authentik to the backend application
+		auth_request_set $authentik_username $upstream_http_x_authentik_username;
+		auth_request_set $authentik_groups $upstream_http_x_authentik_groups;
+		proxy_set_header X-Authentik-Username $authentik_username;
+		proxy_set_header X-Authentik-Groups $authentik_groups;
+		{% endif %}
+
+		proxy_pass http://127.0.0.1:{{ item.port }};
+		proxy_set_header Host $host;
+		proxy_set_header X-Forwarded-Proto $scheme;
+
+		proxy_http_version 1.1;
+		proxy_buffering off;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+
+		gzip off;
+	}
+
+	# --- AUTHENTIK REDIRECT FOR UNAUTHENTICATED USERS ---
+	{% if item.secured %}
+	location @goauthentik_restart {
+		return 302 $scheme://$http_host/outpost.goauthentik.io/start?rd=$request_uri;
+	}
+	{% endif %}
+}
+
